@@ -1,6 +1,6 @@
 <template>
   <div class="main-bar">
-    <h1 style="font-style=italic;font-size:50px">KCA</h1>
+    <h1 style="font-style: italic;font-size: 2.2em">KCA</h1>
     <div id="nav">
       <router-link to="/">Hoofdscherm</router-link>
       <router-link to="/mededelingen">Mededelingen</router-link>
@@ -9,7 +9,20 @@
   <router-view/>
 </template>
 
-<style scoped>
+<script>
+export default {
+  async mounted() {
+    try{
+      await this.$store.dispatch('getAllFilialen');
+    }
+    catch(error) {
+      this.error = error;
+    }
+  },
+}
+</script>
+
+<style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -30,7 +43,7 @@
 }
 
 #nav {
-  padding: 30px;
+  padding: 0.5em;
   display: flex;
   justify-content: space-evenly;
 }
@@ -48,6 +61,12 @@
 }
 
 #nav a.router-link-exact-active {
-  border-bottom: blue 5px solid;
+  border-bottom: blue 0.2em solid;
+}
+
+@media only screen and (max-width: 780px) {
+  body {
+    font-size: 13px;
+  }
 }
 </style>
