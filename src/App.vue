@@ -6,11 +6,17 @@
       <router-link to="/mededelingen">Mededelingen</router-link>
     </div>
   </div>
-  <router-view/>
+  <router-view :filialen="filialen"/>
 </template>
 
 <script>
+import { mapState } from 'vuex';
 export default {
+  computed: {
+    ...mapState({
+      filialen: state => state.filialen
+    })
+  },
   async mounted() {
     try{
       await this.$store.dispatch('getAllFilialen');

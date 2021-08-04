@@ -1,33 +1,45 @@
 <template>
   <div class="container">
-    <div class="mededelingen">
-      <FiliaalCard v-for="mededeling in mededelingen" :key="mededeling.filiaalNummer" :filiaal="mededeling" />
+    <Pagination @paginationChanged="changePagination($event)" v-if="showPagination" :resultAmount="resultSet.length"/>
+    <div class="results">
+      <FiliaalCard v-for="mededeling in results" :key="mededeling.filiaalNummer" :filiaal="mededeling" />
     </div>
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex';
 import FiliaalCard from '@/components/FiliaalCard';
+import Pagination from '@/components/Pagination';
+
+import PaginationMixin from '@/mixins/PaginationMixin';
 
 export default {
+  mixins: [PaginationMixin],
   components: {
     FiliaalCard,
+    Pagination,
+  },
+  props: {
+    filialen: {
+      type: Object,
+    }
   },
   computed: {
-    ...mapState({
-      filialen: state => state.filialen
-    }),
-    mededelingen() {
+    resultSet() {
       return Object.values(this.filialen).filter(
         filiaal => filiaal.mededeling
       ).map(
         filiaal => ({
-          filiaalNummer: filiaal['filiaalNummer'],
+          filiaalnummer: filiaal['filiaalnummer'],
           address: filiaal['address'],
           mededeling: filiaal['mededeling']
         })
       );
+    },
+    results() {
+      return this.currentPaginatedResultSet.length === 0 ?
+        this.resultSet.slice(0, process.env.VUE_APP_PAGINATION_SIZE) :
+        this.currentPaginatedResultSet;
     }
   }
 }

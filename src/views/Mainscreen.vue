@@ -24,19 +24,7 @@
       @keyup.enter="search($event, searchBarMode.fn)"
       >
     </div>
-    <p v-if="resultSet.length > 0" class="result-amount">Resultaten: {{ resultSet.length }}</p>
-    <div class="pagination-btns" v-if="paginationSize.length > 1">
-      <button
-        class="pagination-btn"
-        role="button"
-        @click="setPagination(i)"
-        v-for="i in paginationSize"
-        :key="i"
-        :style="paginationButtonSelected(i)"
-        >
-        {{ i }}
-      </button>
-    </div>
+    <Pagination @paginationChanged="changePagination($event)" v-if="showPagination" :resultAmount="resultSet.length"/>
     <div class="results">
       <FiliaalCard v-for="filiaal in results" :key="filiaal.filiaalnummer" :filiaal="filiaal"/>
       <p class="error" v-if="error"> {{ error }}</p>
@@ -45,26 +33,29 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
 import FiliaalCard from '@/components/FiliaalCard';
+import Pagination from '@/components/Pagination';
+import PaginationMixin from '@/mixins/PaginationMixin';
 
 export default {
+  mixins: [PaginationMixin],
   components: {
     FiliaalCard,
+    Pagination,
+  },
+  props: {
+    filialen: {
+      type: Object
+    }
   },
   data() {
     return {
       resultSet: [],
-      currentPage: 1,
-      currentPaginatedResultSet: [],
       error: '',
       searchMode: 'filiaal-nummer',
     };
   },
   computed: {
-    ...mapState ({
-      filialen: state => state.filialen
-    }),
     searchBarMode() {
       const mapping = {
         'filiaal-nummer': {
@@ -85,38 +76,12 @@ export default {
       }
       return mapping[this.searchMode];
     },
-    paginationSize() {
-      const totalPagination = this.resultSet.length / process.env.VUE_APP_PAGINATION_SIZE + 1;
-      const paginationArray = [];
-      if (totalPagination > 0) {
-        for (let i = 1; i < totalPagination; ++i) {
-          paginationArray.push(i);
-        }
-        return paginationArray;
-      }
-      return [];
-    },
     results() {
       return this.currentPaginatedResultSet.length > 0 ?
         this.currentPaginatedResultSet : this.resultSet;
     },
   },
   methods: {
-    setPagination(currentPage) {
-      this.currentPage = currentPage;
-      this.currentPaginatedResultSet = this.resultSet.slice(
-        (this.currentPage - 1) * process.env.VUE_APP_PAGINATION_SIZE,
-        this.currentPage * process.env.VUE_APP_PAGINATION_SIZE
-      );
-    },
-    paginationButtonSelected(currentPage) {
-      if (currentPage === this.currentPage) {
-        return {
-          backgroundColor: '#f9bca3'
-        };
-      }
-      return {};
-    },
     searchFiliaalNummer(e) {
       const filiaalNummer = e.target.value;
       const filiaal = this.filialen[filiaalNummer];
@@ -135,11 +100,10 @@ export default {
     },
     searchPostcode(e) {
       const searchTerm = e.target.value;
-      console.log(searchTerm);
       const postCodeRegex = /(^\d{4}\s*\w{2}$)|(^[B|b]*\s*\d{4,5}$)/
 
       if (!postCodeRegex.test(searchTerm)) {
-        this.error = "Postcode moet naar geldig Nederlandse of Belgie conventie ingevoerd worden";
+        this.error = "Postcode moet naar geldig Nederlandse of Belgische conventie ingevoerd worden";
         return;
       }
 
@@ -164,7 +128,8 @@ export default {
     search(e, searchFunc) {
       this.resetScreen();
       searchFunc(e);
-      this.setPagination(1);
+      const pageNumber = 1;
+      this.changePagination(pageNumber);
       this.clearInput();
     },
     resetScreen() {
@@ -181,7 +146,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
   .container {
     margin: 9em 0;
     padding: 0.5em;
@@ -230,10 +195,5 @@ export default {
     color: red;
     font-size: 24px;
     font-weight: bold;
-  }
-
-  .pagination-btn {
-    font-size: 1.1em;
-    margin: 0.2em;
   }
 </style>
