@@ -146,7 +146,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
   .container {
     margin: 9em 0;
     padding: 0.5em;
@@ -182,15 +182,7 @@ export default {
     flex-direction: column;
   }
 
-  .results {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 20px auto;
-    padding: 10px;
-    width: 85vw;
-  }
-
+  
   .error {
     color: red;
     font-size: 24px;

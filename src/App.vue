@@ -70,6 +70,28 @@ export default {
   border-bottom: blue 0.2em solid;
 }
 
+.results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px auto;
+  padding: 10px;
+  width: 85vw;
+}
+
+.btn {
+  font-size: 0.7em;
+  border-radius: 1em;
+  padding: 0.5em;
+  cursor: pointer;
+  transition: all 400ms ease-in-out;
+  background-color: bisque;
+}
+
+.btn:hover {
+  background-color: #f7637d;
+}
+
 @media only screen and (max-width: 780px) {
   body {
     font-size: 13px;
