@@ -29,6 +29,10 @@ export default {
 </script>
 
 <style>
+pre {
+  white-space: break-spaces;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -90,6 +94,14 @@ export default {
 
 .btn:hover {
   background-color: #f7637d;
+}
+
+.edit-mededeling {
+  display: block;
+  width: 90%;
+  height: max-content;
+  font-size: 1.1em;
+  margin: 1em auto;
 }
 
 @media only screen and (max-width: 780px) {

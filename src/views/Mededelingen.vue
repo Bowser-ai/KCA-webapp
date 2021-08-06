@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <div v-show="message" class="message"> {{ message }} </div>
     <button
       class="btn add-mededeling-btn"
       role="button"
@@ -33,9 +34,6 @@
             rows="5"
           />
         </span>
-        <span v-if="error">
-          <p class="error">{{ error }}</p>
-        </span>
         <div class="modal-btns">
           <button
             role="button"
@@ -57,10 +55,25 @@
     <div class="results">
       <FiliaalCard
         v-for="mededeling in results"
-        :key="mededeling.filiaalNummer"
+        :key="mededeling.filiaalnummer"
         :filiaal="mededeling"
       >
-        <button role="button" class="btn edit-mededeling-btn">Aanpassen</button>
+        <button
+          v-if="editMode[mededeling.filiaalnummer]"
+          role="button"
+          class="btn edit-mededeling-btn"
+          @click="editMededeling($event, mededeling)"
+        >
+          Opslaan
+        </button>
+        <button
+          v-else
+          @click="enableEditMode($event, mededeling.filiaalnummer)"
+          role="button"
+          class="btn edit-mededeling-btn"
+        >
+          Aanpassen
+        </button>
       </FiliaalCard>
     </div>
   </div>
@@ -86,7 +99,8 @@ export default {
   data() {
     return {
       showAddMededelingModal: false,
-      error: '',
+      editMode: {},
+      message: '',
     };
   },
   computed: {
@@ -120,20 +134,71 @@ export default {
         bodyEl.style.overflow = 'auto';
       }
     },
+    enableEditMode(e, filiaalnummer) {
+      if (!this.elementCache) this.elementCache = {}
+      this.editMode[filiaalnummer] = true;
+      const textarea = document.createElement('textarea');
+      textarea.setAttribute('rows', 5);
+      const mededelingParagraph = e.target.parentNode.querySelector('.mededeling');
+      this.elementCache.mededelingParagraph = mededelingParagraph;
+      textarea.innerHTML = mededelingParagraph.innerText;
+      mededelingParagraph.replaceWith(textarea);
+      textarea.classList.add('edit-mededeling');
+    },
+    disableEditMode(filiaalnummer) {
+      this.editMode[filiaalnummer] = false;
+      const mededelingParagraph = this.elementCache.mededelingParagraph;
+      const textarea = document.querySelector('.edit-mededeling');
+      textarea.replaceWith(mededelingParagraph);
+    },
+    editMededeling(e, filiaal) {
+      const mededeling = e.target.parentNode.querySelector('.edit-mededeling').value;
+      filiaal.mededeling = mededeling;
+      this.updateMededeling(filiaal);
+      this.disableEditMode(filiaal.filiaalnummer);
+    },
     addMededeling() {
       const filiaalnummer = document.querySelector('[data-role="input-filiaalnummer"]').value;
       const filiaal = this.filialen[filiaalnummer];
       if (filiaal === undefined) {
-        this.error = `Filiaal met nummer: ${filiaalnummer} bestaat niet`;
-        return;
+        this.setMessage(`Filiaal met nummer: ${filiaalnummer} bestaat niet`, false);
       }
-      if (filiaal.mededeling) {
-        this.error = `Filiaal met nummer: ${filiaalnummer} heeft al een mededeling`;
-        return;
+      else {
+        const mededeling = document.querySelector('[data-role="input-mededeling"]').value;
+        if (filiaal.mededeling) {
+          filiaal.mededeling += '\n' + mededeling;
+        }
+        else {
+          filiaal.mededeling = mededeling;
+        }
+        this.updateMededeling(filiaal);
       }
-      filiaal.mededeling = document.querySelector('[data-role="input-mededeling"]').value;
-      this.$store.dispatch('addMededeling', filiaal);
-    }
+      this.toggleAddMededelingModal();
+    },
+    async updateMededeling(filiaal) {
+      try{
+        await this.$store.dispatch('addMededeling', filiaal);
+        if (filiaal.mededeling) {
+          this.setMessage(`Mededeling toevoegd aan filiaal met nummer: ${filiaal.filiaalnummer}`, true);
+        }
+        else {
+          this.setMessage(`Mededeling verwijderd van filiaal met nummer: ${filiaal.filiaalnummer}` ,true);
+        }
+      }
+      catch (error) {
+        this.setMessage(error, false);
+      }
+    },
+    setMessage(msg, isSuccessFull) {
+      this.message = msg;
+      const addedClass = isSuccessFull ? 'success' : 'error'
+      const messageElem = document.querySelector('.message');
+      messageElem.classList.add(addedClass);
+      setTimeout(() => {
+        messageElem.classList.remove(addedClass);
+        this.message = '';
+      }, 3000);
+    },
   }
 }
 </script>
@@ -201,5 +266,28 @@ export default {
   .add-mededeling-btn {
     font-size: 1.1em;
     margin-bottom: 0.9em;
+  }
+
+  .error {
+    display: flex;
+    background-color: red;
+  }
+
+  .success {
+    display: flex;
+    background-color: #aeeaaefc;
+  }
+
+  .message {
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    transform: translateX(50%);
+    font-size: 1.4em;
+    position: fixed;
+    width: 50%;
+    padding: 1em;
+    height: 3.0em;
+    border-radius: 2em;
   }
 </style>

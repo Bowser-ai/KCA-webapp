@@ -9,7 +9,7 @@
     <p v-if="filiaal.info" class="header">Info:</p>
     <p v-if="filiaal.info">{{ filiaal.info }}</p>
     <p v-if="filiaal.mededeling" class="header">Mededeling</p>
-    <p v-if="filiaal.mededeling"> {{ filiaal.mededeling }}</p>
+    <p class="mededeling" v-if="filiaal.mededeling"> <pre>{{ filiaal.mededeling }}</pre></p>
     <slot></slot>
   </div>
 </template>
