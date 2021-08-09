@@ -106,7 +106,19 @@ pre {
 
 @media only screen and (max-width: 780px) {
   body {
-    font-size: 13px;
+    font-size: 12px;
+  }
+
+  .modal-body {
+    width: 85%;
+  }
+
+  .input-field {
+    flex-direction: column;
+  }
+
+  .input-field > label {
+    margin-bottom: 0.5em;
   }
 }
 </style>
