@@ -8,22 +8,43 @@
     <p v-if="filiaal.postcode"> {{ filiaal.postcode }}</p>
     <p v-if="filiaal.info" class="header">Info:</p>
     <p v-if="filiaal.info">{{ filiaal.info }}</p>
-    <p v-if="filiaal.mededeling" class="header">Mededeling</p>
-    <p class="mededeling" v-if="filiaal.mededeling"> <pre>{{ filiaal.mededeling }}</pre></p>
+    <div v-if="filiaal.mededeling">
+      <p class="header" >Mededeling</p>
+      <p v-if="!editMededelingMode" class="mededeling"> <pre>{{ mededeling }}</pre></p>
+      <textarea class="edit-mededeling" v-model="mededeling" v-else cols="50" rows="4"></textarea>
+    </div>
     <slot></slot>
   </div>
 </template>
 
 <script>
   export default{
+    data() {
+      return {
+        enteredMededeling: this.filiaal.mededeling
+      };
+    },
     props: {
       filiaal: {
         type: Object,
+      },
+      editMededelingMode: {
+        type: Boolean,
+        default: false
       }
     },
     computed: {
       addressMapUrl() {
         return `${process.env.VUE_APP_MAPS_APPLICATION_URL}?q=${this.filiaal.address}`;
+      },
+      mededeling: {
+        get() {
+          return this.enteredMededeling;
+        },
+        set(value) {
+          this.enteredMededeling = value;
+          this.$emit('mededelingAdded', value);
+        }
       }
     }
   }
@@ -48,4 +69,13 @@
   .address-link:hover {
     color: red;
   }
+
+  .edit-mededeling {
+    display: block;
+    width: 90%;
+    height: max-content;
+    font-size: 1.1em;
+    margin: 1em auto;
+  }
+
 </style>

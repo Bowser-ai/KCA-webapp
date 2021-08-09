@@ -54,21 +54,23 @@
     </div>
     <div class="results">
       <FiliaalCard
-        v-for="mededeling in results"
-        :key="mededeling.filiaalnummer"
-        :filiaal="mededeling"
+        v-for="(filiaal, index) in results"
+        :key="filiaal.filiaalnummer"
+        :filiaal="filiaal"
+        :editMededelingMode="editMededelingMode[index]"
+        @mededelingAdded="mededeling = $event"
       >
         <button
-          v-if="editMode[mededeling.filiaalnummer]"
+          v-if="editMededelingMode[index]"
           role="button"
           class="btn edit-mededeling-btn"
-          @click="editMededeling($event, mededeling)"
+          @click="editMededeling(filiaal, index)"
         >
           Opslaan
         </button>
         <button
           v-else
-          @click="enableEditMode($event, mededeling.filiaalnummer)"
+          @click="editMededelingMode[index] = true"
           role="button"
           class="btn edit-mededeling-btn"
         >
@@ -101,6 +103,8 @@ export default {
       showAddMededelingModal: false,
       editMode: {},
       message: '',
+      editMededelingMode: {},
+      mededeling: '',
     };
   },
   computed: {
@@ -134,28 +138,18 @@ export default {
         bodyEl.style.overflow = 'auto';
       }
     },
-    enableEditMode(e, filiaalnummer) {
-      if (!this.elementCache) this.elementCache = {}
-      this.editMode[filiaalnummer] = true;
-      const textarea = document.createElement('textarea');
-      textarea.setAttribute('rows', 5);
-      const mededelingParagraph = e.target.parentNode.querySelector('.mededeling');
-      this.elementCache.mededelingParagraph = mededelingParagraph;
-      textarea.innerHTML = mededelingParagraph.innerText;
-      mededelingParagraph.replaceWith(textarea);
-      textarea.classList.add('edit-mededeling');
-    },
-    disableEditMode(filiaalnummer) {
-      this.editMode[filiaalnummer] = false;
-      const mededelingParagraph = this.elementCache.mededelingParagraph;
-      const textarea = document.querySelector('.edit-mededeling');
-      textarea.replaceWith(mededelingParagraph);
-    },
-    editMededeling(e, filiaal) {
-      const mededeling = e.target.parentNode.querySelector('.edit-mededeling').value;
-      filiaal.mededeling = mededeling;
+    editMededeling(filiaal, index) {
+      if (!this.mededeling) {
+        this.setMessage(
+          `Er is geen mededeling ingevoerd voor filiaal met nummer: ${filiaal.filiaalnummer}` +
+          ', graag een mededeling invoeren',
+          false
+        );
+        return;
+      }
+      filiaal.mededeling = this.mededeling;
       this.updateMededeling(filiaal);
-      this.disableEditMode(filiaal.filiaalnummer);
+      this.editMededelingMode[index] = false;
     },
     addMededeling() {
       const filiaalnummer = document.querySelector('[data-role="input-filiaalnummer"]').value;
