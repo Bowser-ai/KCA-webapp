@@ -11,6 +11,8 @@
 
 <script>
 import { mapState } from 'vuex';
+import { RepositoryFactory } from '@/repositories/RepositoryFactory';
+
 export default {
   computed: {
     ...mapState({
@@ -19,6 +21,10 @@ export default {
   },
   async mounted() {
     try{
+      const repository = RepositoryFactory.createRepository(
+        process.env.VUE_APP_REPOSITORY
+      );
+      this.$store.commit('setRepository', repository);
       await this.$store.dispatch('getAllFilialen');
     }
     catch(error) {
