@@ -1,5 +1,5 @@
 <template>
-  <div class="pagination-container">
+  <div v-if="showPagination" class="pagination-container">
     <p class="result-amount">Resultaten: {{ resultAmount }}</p>
     <div class="pagination-btns" v-if="paginationSize.length > 1">
       <button
@@ -20,16 +20,22 @@
   export default {
     data() {
       return {
-        currentPage: 1
+        currentPage: 1,
       };
     },
     props: {
-      resultAmount: {
-        type: Number,
-        default: 0
-      },
+      resultSet: {
+        type: Array,
+        default: () => [],
+      }
+    },
+    mounted() {
+      this.setPagination(1);
     },
     computed: {
+      resultAmount() {
+        return this.resultSet.length;
+      },
       paginationSize() {
         const totalPagination = this.resultAmount / process.env.VUE_APP_PAGINATION_SIZE + 1;
         const paginationArray = [];
@@ -40,6 +46,9 @@
           return paginationArray;
         }
         return [];
+      },
+      showPagination() {
+        return this.resultAmount > process.env.VUE_APP_PAGINATION_SIZE;
       },
     },
     methods: {
@@ -53,8 +62,10 @@
       },
       setPagination(page) {
         this.currentPage = page;
-        this.$emit('paginationChanged', this.currentPage);
-      }
+        const lowerBound = (page - 1) * process.env.VUE_APP_PAGINATION_SIZE
+        const upperBound = page * process.env.VUE_APP_PAGINATION_SIZE
+        this.$emit('paginationChanged', lowerBound, upperBound);
+      },
     },
   }
 </script>

@@ -17,16 +17,20 @@
     </div>
     <div class="search-form">
       <input
-      :placeholder="searchBarMode.placeholder"
-      :type="searchBarMode.type"
-      id="search-field"
-      class="search-input-field"
-      @keyup.enter="search($event, searchBarMode.fn)"
+        id="search-field"
+        :placeholder="searchBarMode.placeholder"
+        :type="searchBarMode.type"
+        :value="searchTerm"
+        class="search-input-field"
+        @keyup.enter="search($event, searchBarMode.fn)"
       >
     </div>
-    <Pagination @paginationChanged="changePagination($event)" v-if="showPagination" :resultAmount="resultSet.length"/>
+    <Pagination
+      @paginationChanged="changePages"
+      :resultSet="resultSet"
+    />
     <div class="results">
-      <FiliaalCard v-for="filiaal in results" :key="filiaal.filiaalnummer" :filiaal="filiaal"/>
+      <FiliaalCard v-for="filiaal in results" :key="filiaal.filiaalNumber" :filiaal="filiaal"/>
       <p class="error" v-if="error"> {{ error }}</p>
     </div>
   </div>
@@ -35,10 +39,8 @@
 <script>
 import FiliaalCard from '@/components/FiliaalCard';
 import Pagination from '@/components/Pagination';
-import PaginationMixin from '@/mixins/PaginationMixin';
 
 export default {
-  mixins: [PaginationMixin],
   components: {
     FiliaalCard,
     Pagination,
@@ -51,8 +53,11 @@ export default {
   data() {
     return {
       resultSet: [],
+      lowerPage: 0,
+      upperPage: null,
       error: '',
       searchMode: 'filiaal-nummer',
+      searchTerm: '',
     };
   },
   computed: {
@@ -77,16 +82,19 @@ export default {
       return mapping[this.searchMode];
     },
     results() {
-      return this.currentPaginatedResultSet.length > 0 ?
-        this.currentPaginatedResultSet : this.resultSet;
+      return this.upperPage ? this.resultSet.slice(this.lowerPage, this.upperPage) : this.resultSet;
     },
   },
   methods: {
+    changePages(lower, upper){
+      this.lowerPage = lower;
+      this.upperPage = upper;
+    },
     searchFiliaalNummer(e) {
-      const filiaalNummer = e.target.value;
-      const filiaal = this.filialen[filiaalNummer];
+      const filiaalNumber = e.target.value;
+      const filiaal = this.filialen[filiaalNumber];
       if (filiaal === undefined) {
-        this.error = `filiaal met nummer: "${filiaalNummer}" niet gevonden`;
+        this.error = `filiaal met nummer: "${filiaalNumber}" niet gevonden`;
         return;
       }
       this.resultSet.push(filiaal);
@@ -110,7 +118,7 @@ export default {
       const removeWsRegex = /\s+/g;
       this.searchImpl(
         searchTerm,
-        'postcode',
+        'zipcode',
         postcode => postcode.toLowerCase().replace(removeWsRegex, '') ===
           searchTerm.toLowerCase().replace(removeWsRegex, '')
       );
@@ -128,8 +136,6 @@ export default {
     search(e, searchFunc) {
       this.resetScreen();
       searchFunc(e);
-      const pageNumber = 1;
-      this.changePagination(pageNumber);
       this.clearInput();
     },
     resetScreen() {
@@ -140,7 +146,7 @@ export default {
       this.searchMode = e.target.value;
     },
     clearInput() {
-      document.querySelector('#search-field').value = '';
+      this.searchTerm = '';
     },
   },
 }
@@ -182,7 +188,6 @@ export default {
     flex-direction: column;
   }
 
-  
   .error {
     color: red;
     font-size: 24px;
