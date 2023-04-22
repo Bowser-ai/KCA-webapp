@@ -6,6 +6,8 @@
     <a class="address-link" :href="addressMapUrl"><p>{{ filiaal.address }}</p></a>
     <p v-if="filiaal.zipcode" class="header">Postcode</p>
     <p v-if="filiaal.zipcode"> {{ filiaal.zipcode }}</p>
+    <p v-if="filiaal.tel" class="header">Tel:</p>
+    <p v-if="filiaal.tel"> {{ filiaal.tel}}</p>
     <p v-if="filiaal.info" class="header">Info:</p>
     <p v-if="filiaal.info">{{ filiaal.info }}</p>
     <div class="mededelingen" v-for="(mededeling, i) in filiaal.mededelingen" :key="mededeling.id">
@@ -19,6 +21,7 @@
 <script>
   import { formatDate } from '@/utils/formatdate';
   export default{
+    name: 'FiliaalCard',
     data() {
       return {
         formatDate,

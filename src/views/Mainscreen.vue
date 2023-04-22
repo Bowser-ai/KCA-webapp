@@ -7,11 +7,11 @@
         FiliaalNummer
       </label>
       <label>
-        <input type="radio" @change="changeSearchMode" name="search-type" value="adres/plaats">
+        <input id="address" type="radio" @change="changeSearchMode" name="search-type" value="adres/plaats">
         Adres/plaats
       </label>
       <label>
-        <input type="radio" @change="changeSearchMode" name="search-type" value="postcode">
+        <input id="zipcode" type="radio" @change="changeSearchMode" name="search-type" value="postcode">
         Postcode
       </label>
     </div>
@@ -134,6 +134,7 @@ export default {
       }
     },
     search(e, searchFunc) {
+      if (!e.target.value) return;
       this.resetScreen();
       searchFunc(e);
       this.clearInput();
