@@ -10,7 +10,7 @@
     <p v-if="filiaal.info">{{ filiaal.info }}</p>
     <div v-if="filiaal.mededeling">
       <p class="header" >Mededeling</p>
-      <p v-if="!editMededelingMode" class="mededeling"> <pre>{{ mededeling }}</pre></p>
+      <p v-if="!editMededelingMode" class="mededeling"> {{ mededeling }}</p>
       <textarea class="edit-mededeling" v-model="mededeling" v-else cols="50" rows="4"></textarea>
     </div>
     <slot></slot>
@@ -35,7 +35,7 @@
     },
     computed: {
       addressMapUrl() {
-        return `${process.env.VUE_APP_MAPS_APPLICATION_URL}?q=${this.filiaal.address}`;
+        return `${import.meta.env.VITE_MAPS_APPLICATION_URL}?q=${this.filiaal.address}`;
       },
       mededeling: {
         get() {

@@ -31,8 +31,8 @@
     },
     computed: {
       paginationSize() {
-        const totalPagination = this.resultAmount / process.env.VUE_APP_PAGINATION_SIZE + 1;
-        const paginationArray = [];
+        const totalPagination = this.resultAmount / import.meta.env.VITE_PAGINATION_SIZE + 1;
+        const paginationArray = []
         if (totalPagination > 0) {
           for (let i = 1; i < totalPagination; ++i) {
             paginationArray.push(i);

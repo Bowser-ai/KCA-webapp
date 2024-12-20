@@ -22,7 +22,7 @@ export default {
   async mounted() {
     try{
       const repository = RepositoryFactory.createRepository(
-        process.env.VUE_APP_REPOSITORY
+       import.meta.env.VITE_REPOSITORY 
       );
       this.$store.commit('setRepository', repository);
       await this.$store.dispatch('getAllFilialen');
@@ -54,6 +54,7 @@ pre {
   flex-direction: column;
   justify-content: center;
   position: fixed;
+  top: 0;
   width: 100%;
   z-index: 1;
 }

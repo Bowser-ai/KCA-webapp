@@ -82,10 +82,10 @@
 </template>
 
 <script>
-import FiliaalCard from '@/components/FiliaalCard';
-import Pagination from '@/components/Pagination';
+import FiliaalCard from '@/components/FiliaalCard.vue';
+import Pagination from '@/components/Pagination.vue';
 
-import PaginationMixin from '@/mixins/PaginationMixin';
+import PaginationMixin from '@/mixins/PaginationMixin.vue';
 
 export default {
   mixins: [PaginationMixin],
@@ -121,7 +121,7 @@ export default {
     },
     results() {
       return this.currentPaginatedResultSet.length === 0 ?
-        this.resultSet.slice(0, process.env.VUE_APP_PAGINATION_SIZE) :
+        this.resultSet.slice(0, import.meta.env.VITE_PAGINATION_SIZE) :
         this.currentPaginatedResultSet;
     }
   },

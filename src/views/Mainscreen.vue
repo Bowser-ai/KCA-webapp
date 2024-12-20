@@ -33,9 +33,9 @@
 </template>
 
 <script>
-import FiliaalCard from '@/components/FiliaalCard';
-import Pagination from '@/components/Pagination';
-import PaginationMixin from '@/mixins/PaginationMixin';
+import FiliaalCard from '@/components/FiliaalCard.vue';
+import Pagination from '@/components/Pagination.vue';
+import PaginationMixin from '@/mixins/PaginationMixin.vue';
 
 export default {
   mixins: [PaginationMixin],
