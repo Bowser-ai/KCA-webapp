@@ -1,11 +1,11 @@
-import { FilialenRepository } from '@/repositories/FilialenRepository';
+import { FirebaseRepository } from '@/repositories/FirebaseRepository';
 
 
 const mapping = Symbol();
 
 export class RepositoryFactory {
   static [mapping] = {
-    filialen: new FilialenRepository(),
+    firebase : new FirebaseRepository()
   }
   static createRepository(name) {
     if (this[mapping][name] === undefined) {

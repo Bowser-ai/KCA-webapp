@@ -1,5 +1,5 @@
 <template>
-  <div v-if="showPagination" class="pagination-container">
+  <div class="pagination-container">
     <p class="result-amount">Resultaten: {{ resultAmount }}</p>
     <div class="pagination-btns" v-if="paginationSize.length > 1">
       <button
@@ -20,25 +20,19 @@
   export default {
     data() {
       return {
-        currentPage: 1,
+        currentPage: 1
       };
     },
     props: {
-      resultSet: {
-        type: Array,
-        default: () => [],
-      }
-    },
-    mounted() {
-      this.setPagination(1);
+      resultAmount: {
+        type: Number,
+        default: 0
+      },
     },
     computed: {
-      resultAmount() {
-        return this.resultSet.length;
-      },
       paginationSize() {
-        const totalPagination = this.resultAmount / process.env.VUE_APP_PAGINATION_SIZE + 1;
-        const paginationArray = [];
+        const totalPagination = this.resultAmount / import.meta.env.VITE_PAGINATION_SIZE + 1;
+        const paginationArray = []
         if (totalPagination > 0) {
           for (let i = 1; i < totalPagination; ++i) {
             paginationArray.push(i);
@@ -46,9 +40,6 @@
           return paginationArray;
         }
         return [];
-      },
-      showPagination() {
-        return this.resultAmount > process.env.VUE_APP_PAGINATION_SIZE;
       },
     },
     methods: {
@@ -62,10 +53,8 @@
       },
       setPagination(page) {
         this.currentPage = page;
-        const lowerBound = (page - 1) * process.env.VUE_APP_PAGINATION_SIZE
-        const upperBound = page * process.env.VUE_APP_PAGINATION_SIZE
-        this.$emit('paginationChanged', lowerBound, upperBound);
-      },
+        this.$emit('paginationChanged', this.currentPage);
+      }
     },
   }
 </script>

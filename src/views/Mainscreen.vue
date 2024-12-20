@@ -7,40 +7,38 @@
         FiliaalNummer
       </label>
       <label>
-        <input id="address" type="radio" @change="changeSearchMode" name="search-type" value="adres/plaats">
+        <input type="radio" @change="changeSearchMode" name="search-type" value="adres/plaats">
         Adres/plaats
       </label>
       <label>
-        <input id="zipcode" type="radio" @change="changeSearchMode" name="search-type" value="postcode">
+        <input type="radio" @change="changeSearchMode" name="search-type" value="postcode">
         Postcode
       </label>
     </div>
     <div class="search-form">
       <input
-        id="search-field"
-        :placeholder="searchBarMode.placeholder"
-        :type="searchBarMode.type"
-        :value="searchTerm"
-        class="search-input-field"
-        @keyup.enter="search($event, searchBarMode.fn)"
+      :placeholder="searchBarMode.placeholder"
+      :type="searchBarMode.type"
+      id="search-field"
+      class="search-input-field"
+      @keyup.enter="search($event, searchBarMode.fn)"
       >
     </div>
-    <Pagination
-      @paginationChanged="changePages"
-      :resultSet="resultSet"
-    />
+    <Pagination @paginationChanged="changePagination($event)" v-if="showPagination" :resultAmount="resultSet.length"/>
     <div class="results">
-      <FiliaalCard v-for="filiaal in results" :key="filiaal.filiaalNumber" :filiaal="filiaal"/>
+      <FiliaalCard v-for="filiaal in results" :key="filiaal.filiaalnummer" :filiaal="filiaal"/>
       <p class="error" v-if="error"> {{ error }}</p>
     </div>
   </div>
 </template>
 
 <script>
-import FiliaalCard from '@/components/FiliaalCard';
-import Pagination from '@/components/Pagination';
+import FiliaalCard from '@/components/FiliaalCard.vue';
+import Pagination from '@/components/Pagination.vue';
+import PaginationMixin from '@/mixins/PaginationMixin.vue';
 
 export default {
+  mixins: [PaginationMixin],
   components: {
     FiliaalCard,
     Pagination,
@@ -53,11 +51,8 @@ export default {
   data() {
     return {
       resultSet: [],
-      lowerPage: 0,
-      upperPage: null,
       error: '',
       searchMode: 'filiaal-nummer',
-      searchTerm: '',
     };
   },
   computed: {
@@ -82,19 +77,16 @@ export default {
       return mapping[this.searchMode];
     },
     results() {
-      return this.upperPage ? this.resultSet.slice(this.lowerPage, this.upperPage) : this.resultSet;
+      return this.currentPaginatedResultSet.length > 0 ?
+        this.currentPaginatedResultSet : this.resultSet;
     },
   },
   methods: {
-    changePages(lower, upper){
-      this.lowerPage = lower;
-      this.upperPage = upper;
-    },
     searchFiliaalNummer(e) {
-      const filiaalNumber = e.target.value;
-      const filiaal = this.filialen[filiaalNumber];
+      const filiaalNummer = e.target.value;
+      const filiaal = this.filialen[filiaalNummer];
       if (filiaal === undefined) {
-        this.error = `filiaal met nummer: "${filiaalNumber}" niet gevonden`;
+        this.error = `filiaal met nummer: "${filiaalNummer}" niet gevonden`;
         return;
       }
       this.resultSet.push(filiaal);
@@ -118,7 +110,7 @@ export default {
       const removeWsRegex = /\s+/g;
       this.searchImpl(
         searchTerm,
-        'zipcode',
+        'postcode',
         postcode => postcode.toLowerCase().replace(removeWsRegex, '') ===
           searchTerm.toLowerCase().replace(removeWsRegex, '')
       );
@@ -134,9 +126,10 @@ export default {
       }
     },
     search(e, searchFunc) {
-      if (!e.target.value) return;
       this.resetScreen();
       searchFunc(e);
+      const pageNumber = 1;
+      this.changePagination(pageNumber);
       this.clearInput();
     },
     resetScreen() {
@@ -147,7 +140,7 @@ export default {
       this.searchMode = e.target.value;
     },
     clearInput() {
-      this.searchTerm = '';
+      document.querySelector('#search-field').value = '';
     },
   },
 }
@@ -189,6 +182,7 @@ export default {
     flex-direction: column;
   }
 
+  
   .error {
     color: red;
     font-size: 24px;

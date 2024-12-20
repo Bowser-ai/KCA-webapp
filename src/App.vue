@@ -2,8 +2,8 @@
   <div class="main-bar">
     <h1 style="font-style: italic;font-size: 2.2em">KCA</h1>
     <div id="nav">
-      <router-link :to="{name: 'mainScreen'}">Hoofdscherm</router-link>
-      <router-link :to="{name: 'mededelingen'}">Mededelingen</router-link>
+      <router-link to="/">Hoofdscherm</router-link>
+      <router-link to="/mededelingen">Mededelingen</router-link>
     </div>
   </div>
   <router-view :filialen="filialen"/>
@@ -16,17 +16,16 @@ import { RepositoryFactory } from '@/repositories/RepositoryFactory';
 export default {
   computed: {
     ...mapState({
-      filialen: state => state.filialen,
+      filialen: state => state.filialen
     })
   },
   async mounted() {
     try{
       const repository = RepositoryFactory.createRepository(
-        process.env.VUE_APP_REPOSITORY
+       import.meta.env.VITE_REPOSITORY 
       );
       this.$store.commit('setRepository', repository);
       await this.$store.dispatch('getAllFilialen');
-      await this.$store.dispatch('getAllMededelingen');
     }
     catch(error) {
       this.error = error;
@@ -55,6 +54,7 @@ pre {
   flex-direction: column;
   justify-content: center;
   position: fixed;
+  top: 0;
   width: 100%;
   z-index: 1;
 }
@@ -93,9 +93,7 @@ pre {
 .btn {
   font-size: 0.7em;
   border-radius: 1em;
-  width: fit-content;
   padding: 0.5em;
-  margin: 1rem;
   cursor: pointer;
   transition: all 400ms ease-in-out;
   background-color: bisque;
@@ -103,50 +101,6 @@ pre {
 
 .btn:hover {
   background-color: #f7637d;
-}
-
-.result-card {
-  display: flex;
-  flex-direction: column;
-  font-size: 1.3em;
-  align-items: center;
-  background-color: #d0a3a7;
-  padding: 20px;
-  box-shadow: 3px 5px 5px 3px;
-  width: 90%;
-  margin: 1.5em auto;
-  border-radius: 10px;
-}
-
-.header {
-  text-decoration: underline;
-  font-weight: bold;
-}
-
-.address-link:hover {
-  color: red;
-}
-
-.edit-mededeling {
-  display: block;
-  width: 90%;
-  height: max-content;
-  font-size: 1.1em;
-  margin: auto;
-}
-
-.mededeling {
-  margin: 0.3rem;
-}
-
-.mededeling-header {
-  font-size: 0.9rem;
-  margin: 0.5rem auto;
-}
-
-.mededelingen {
-  display: flex;
-  flex-direction: column;
 }
 
 @media only screen and (max-width: 780px) {

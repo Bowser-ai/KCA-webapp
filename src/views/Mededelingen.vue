@@ -9,16 +9,10 @@
         Mededeling toevoegen
     </button>
     <Pagination
-      :resultSet="mededelingen"
-      @paginationChanged="updatePagination"
+      @paginationChanged="changePagination($event)"
+      v-if="showPagination"
+      :resultAmount="resultSet.length"
     />
-    <div>
-      <label for="sorting">Sortering</label>
-      <select v-model="sortMethod" class="sorting" id="sorting">
-        <option value="filiaalId" >FiliaalNummer</option>
-        <option value="date">Datum</option>
-      </select>
-    </div>
     <div class="modal" v-if="showAddMededelingModal">
       <div class="modal-body">
         <p class="modal-body-text">Mededeling toevoegen</p>
@@ -28,16 +22,16 @@
             style="width: 4.5em;"
             type="Number"
             id="modal-filiaal-nummer"
-            @input="enteredFiliaalNumber = $event.target.value"
+            data-role="input-filiaalnummer"
           >
         </span>
         <span class="input-field">
           <label for="modal-mededeling">Mededeling:</label>
           <textarea
             id="modal-mededeling"
+            data-role="input-mededeling"
             cols="50"
             rows="5"
-            @input="enteredMededeling = $event.target.value"
           />
         </span>
         <div class="modal-btns">
@@ -59,66 +53,79 @@
       </div>
     </div>
     <div class="results">
-      <MededelingCard
-        v-for="mededeling in result"
-        :key="mededeling.id"
-        :mededeling="mededeling"
-        @mededelingUpdated="handleUpdatedMededeling(mededeling)"
-      />
+      <FiliaalCard
+        v-for="(filiaal, index) in results"
+        :key="filiaal.filiaalnummer"
+        :filiaal="filiaal"
+        :editMededelingMode="editMededelingMode[index]"
+        @mededelingAdded="mededeling = $event"
+      >
+        <button
+          v-if="editMededelingMode[index]"
+          role="button"
+          class="btn edit-mededeling-btn"
+          @click="editMededeling(filiaal, index)"
+        >
+          Opslaan
+        </button>
+        <button
+          v-else
+          @click="editMededelingMode[index] = true"
+          role="button"
+          class="btn edit-mededeling-btn"
+        >
+          Aanpassen
+        </button>
+      </FiliaalCard>
     </div>
   </div>
 </template>
 
 <script>
-import MededelingCard from '@/components/MededelingCard';
-import Pagination from '@/components/Pagination';
+import FiliaalCard from '@/components/FiliaalCard.vue';
+import Pagination from '@/components/Pagination.vue';
 
-const sortMethods = {
-  filiaalId: (m1, m2) => m1.filiaalId - m2.filiaalId,
-  date: (m1, m2) => {
-    const d1 = new Date(m1.dateCreated)
-    const d2 = new Date(m2.dateCreated)
-    return d2 - d1;
-  },
-};
+import PaginationMixin from '@/mixins/PaginationMixin.vue';
+
 export default {
+  mixins: [PaginationMixin],
   components: {
-    MededelingCard,
+    FiliaalCard,
     Pagination,
   },
   props: {
     filialen: {
       type: Object,
-      default: () => {}
     }
   },
   data() {
     return {
       showAddMededelingModal: false,
+      editMode: {},
       message: '',
-      lowerPage: 0,
-      upperPage: null,
-      sortMethod: 'filiaalId',
-      enteredFiliaalNumber: 0,
-      enteredMededeling: ""
+      editMededelingMode: {},
+      mededeling: '',
     };
   },
   computed: {
-    mededelingen() {
+    resultSet() {
       return Object.values(this.filialen).filter(
-        filiaal => filiaal.mededelingen.length > 0
-      ).reduce((acc, filiaal) => [...acc, ...filiaal.mededelingen], [])
-        .sort(sortMethods[this.sortMethod])
+        filiaal => filiaal.mededeling
+      ).map(
+        filiaal => ({
+          filiaalnummer: filiaal['filiaalnummer'],
+          address: filiaal['address'],
+          mededeling: filiaal['mededeling']
+        })
+      );
     },
-    result() {
-      return this.upperPage ? this.mededelingen.slice(this.lowerPage, this.upperPage) : this.mededelingen;
-    },
+    results() {
+      return this.currentPaginatedResultSet.length === 0 ?
+        this.resultSet.slice(0, import.meta.env.VITE_PAGINATION_SIZE) :
+        this.currentPaginatedResultSet;
+    }
   },
   methods: {
-    updatePagination(lower, upper) {
-      this.lowerPage = lower;
-      this.upperPage = upper;
-    },
     toggleAddMededelingModal() {
       this.showAddMededelingModal = !this.showAddMededelingModal;
       this.toggleScrolling();
@@ -131,30 +138,49 @@ export default {
         bodyEl.style.overflow = 'auto';
       }
     },
-    handleUpdatedMededeling(mededeling) {
-      this.setMessage(`Mededeling is aangepast voor filiaal met nummer: ${mededeling.filiaalId}`, true);
+    editMededeling(filiaal, index) {
+      if (!this.mededeling) {
+        this.setMessage(
+          `Er is geen mededeling ingevoerd voor filiaal met nummer: ${filiaal.filiaalnummer}` +
+          ', graag een mededeling invoeren',
+          false
+        );
+        return;
+      }
+      filiaal.mededeling = this.mededeling;
+      this.updateMededeling(filiaal);
+      this.editMededelingMode[index] = false;
     },
     addMededeling() {
-      const filiaal = this.filialen[this.enteredFiliaalNumber];
+      const filiaalnummer = document.querySelector('[data-role="input-filiaalnummer"]').value;
+      const filiaal = this.filialen[filiaalnummer];
       if (filiaal === undefined) {
-        this.setMessage(`Filiaal met nummer: ${this.enteredFiliaalNumber} bestaat niet`, false);
+        this.setMessage(`Filiaal met nummer: ${filiaalnummer} bestaat niet`, false);
       }
       else {
-        this.createMededeling(filiaal.filiaalNumber, this.enteredMededeling);
+        const mededeling = document.querySelector('[data-role="input-mededeling"]').value;
+        if (filiaal.mededeling) {
+          filiaal.mededeling += '\n' + mededeling;
+        }
+        else {
+          filiaal.mededeling = mededeling;
+        }
+        this.updateMededeling(filiaal);
       }
       this.toggleAddMededelingModal();
     },
-    async createMededeling(filiaalId, mededeling) {
+    async updateMededeling(filiaal) {
       try{
-        await this.$store.dispatch('createMededeling', {filiaalId, mededeling});
-        this.setMessage(`Mededeling toevoegd aan filiaal met nummer: ${filiaalId}`, true);
+        await this.$store.dispatch('addMededeling', filiaal);
+        if (filiaal.mededeling) {
+          this.setMessage(`Mededeling toevoegd aan filiaal met nummer: ${filiaal.filiaalnummer}`, true);
+        }
+        else {
+          this.setMessage(`Mededeling verwijderd van filiaal met nummer: ${filiaal.filiaalnummer}` ,true);
+        }
       }
       catch (error) {
-        this.setMessage('Er is iets misgegaan', false);
-      }
-      finally {
-        this.enteredMededeling = "";
-        this.enteredFiliaalNumber = 0;
+        this.setMessage(error, false);
       }
     },
     setMessage(msg, isSuccessFull) {
@@ -257,9 +283,5 @@ export default {
     padding: 1em;
     height: 3.0em;
     border-radius: 2em;
-  }
-  .sorting {
-    font-size: 17pt;
-    margin: 1.2rem;
   }
 </style>
