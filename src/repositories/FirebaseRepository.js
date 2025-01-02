@@ -1,24 +1,39 @@
-import { BaseRepository } from '@/repositories/BaseRepository';
-import db from '@/utils/firebase';
-
+import { BaseRepository } from "@/repositories/BaseRepository";
+import { db } from "@/utils/firebase";
+import {
+  ref,
+  child,
+  get,
+  query,
+  orderByChild,
+  equalTo,
+  update,
+} from "firebase/database";
 
 export class FirebaseRepository extends BaseRepository {
   async getAllFilialen() {
-    const snapshot = await db.ref().once('value');
-    if (!snapshot.exists()) throw new Error('database error, try again later');
+    const snapshot = await get(child(ref(db), "/"));
+    if (!snapshot.exists()) throw new Error("database error, try again later");
     const filialen = await snapshot.val();
     return filialen;
   }
   async addMededeling(filiaal) {
-    const snapshot = await db.ref()
-      .orderByChild('filiaalnummer')
-      .equalTo(filiaal.filiaalnummer)
-      .once('value');
+    const snapShot = await get(
+      query(
+        ref(db),
+        orderByChild("filiaalnummer"),
+        equalTo(filiaal.filiaalnummer)
+      )
+    );
 
-    if (!snapshot.exists()) {
-      throw new Error('filiaal niet gevonden in de database');
+    if (!snapShot.exists) {
+      throw new Error(
+        `Database error, updating failed node with number: ${filiaal.filiaalnummer} not found.`
+      );
     }
 
-    await db.ref(Object.keys(snapshot.val())[0]).update(filiaal);
+    const key = Object.keys(snapShot.val())[0];
+
+    await update(ref(db), { [key]: filiaal });
   }
 }

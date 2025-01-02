@@ -180,7 +180,8 @@ export default {
         }
       }
       catch (error) {
-        this.setMessage(error, false);
+        console.error(error);
+        this.setMessage("De mededeling kon niet worden toegevoegd door een fout", false);
       }
     },
     setMessage(msg, isSuccessFull) {

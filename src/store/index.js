@@ -24,7 +24,7 @@ export default createStore({
       commit('setAllFilialen', filialen);
     },
     async addMededeling({ state, commit }, filiaal) {
-      state.repository.addMededeling(filiaal);
+      await state.repository.addMededeling(filiaal);
       commit('setMededeling', filiaal);
     }
   },
