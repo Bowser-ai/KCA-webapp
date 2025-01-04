@@ -1,4 +1,4 @@
-import { BaseRepository } from "@/repositories/BaseRepository";
+import { BaseRepository } from "@/repositories/baseRepository";
 import { db } from "@/utils/firebase";
 import {
   ref,

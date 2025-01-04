@@ -10,15 +10,15 @@
   </div>
   <router-view v-if="!error" :filialen="filialen" />
   <div v-else class="fatal-error">
-    De filialen kunnen niet worden geladen, probeer het later nog eens.
+    {{  error  }}
   </div>
 </template>
 
 <script>
 import { mapState } from "vuex";
-import { RepositoryFactory } from "@/repositories/RepositoryFactory";
 import Authentication from "@/components/Authentication.vue";
-import Auth from "@/authentication/Auth";
+import Auth from "@/authentication/fireBaseAuth";
+import { RepositoryFactory } from "@/repositories/repositoryFactory"
 
 export default {
   data() {
@@ -47,7 +47,8 @@ export default {
       this.$store.commit("setRepository", repository);
       await this.$store.dispatch("getAllFilialen");
     } catch (error) {
-      this.error = error;
+      console.error(error);
+      this.error = "De filialen kunnen niet worden geladen, probeer het later nog eens.";
     }
   },
 };

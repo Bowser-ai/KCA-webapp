@@ -1,48 +1,83 @@
 <template>
   <div v-if="!authenticatedUser || isLoading" class="auth">
-    <div class="spinner" v-if="isLoading">
-    </div>
+    <div class="spinner" v-if="isLoading"></div>
     <form v-else class="auth-form">
       <div class="form-element">
         <label for="username">Gebruikersnaam</label>
-        <input v-model="username" id="username" placeholder="Vul de gebruikersnaam in" />
+        <input
+          v-model="username"
+          id="username"
+          placeholder="Vul de gebruikersnaam in"
+        />
       </div>
       <div class="form-element">
         <label for="password">Wachtwoord</label>
-        <input v-model="password" type="password" id="password" placeholder="Vul het wachtwoord in" />
+        <input
+          v-model="password"
+          type="password"
+          id="password"
+          placeholder="Vul het wachtwoord in"
+        />
       </div>
-      <button :disabled="!username || !password" @click="login" class="login-btn">Login</button>
+      <div class="auth-error">{{ authError }}</div>
+      <button
+        :disabled="!username || !password"
+        @click="login"
+        class="login-btn"
+      >
+        Login
+      </button>
     </form>
   </div>
 </template>
 
 <script>
-import Auth from "@/authentication/Auth";
+import Auth from "@/authentication/fireBaseAuth";
+import {
+  InvalidUserName,
+  InvalidPassword,
+  UnknownError,
+} from "@/authentication/authError";
+
 export default {
   data() {
     return {
       username: "",
       password: "",
       authenticatedUser: null,
+      authError: "",
       isLoading: true,
     };
   },
   beforeCreate() {
-      Auth.currentUser(user => {
-        this.authenticatedUser = user; 
-        this.isLoading = false;
-      });
-
+    Auth.onAuthenticatedUser((user) => {
+      this.authenticatedUser = user;
+      this.isLoading = false;
+    });
   },
   methods: {
     async login(event) {
       event.preventDefault();
-      await Auth.login(
-        this.username, 
-        this.password, () => { Auth.currentUser(user => this.authenticatedUser = user); },
-        (code, message) => {console.log(code)});
-    }
-  }
+      try {
+        await Auth.login(this.username, this.password);
+        this.authError = "";
+      } catch (e) {
+        if (e instanceof InvalidUserName) {
+          this.authError = "Gebruikersnaam is niet correct.";
+          return;
+        }
+        if (e instanceof InvalidPassword) {
+          this.authError = "Onjuist wachtwoord ingevuld.";
+          return;
+        }
+        if (e instanceof UnknownError) {
+          this.authError =
+            "Er heeft een fout opgetreden, probeer het later nog eens.";
+          return;
+        }
+      }
+    },
+  },
 };
 </script>
 
@@ -83,7 +118,7 @@ export default {
   width: 50%;
   font-size: 14pt;
 }
-.login-btn{
+.login-btn {
   font-size: 14pt;
 }
 .spinner {
@@ -98,8 +133,19 @@ export default {
   top: 50%;
 }
 
+.auth-error {
+  color: red;
+  text-align: center;
+  height: 5%;
+  margin-bottom: 20px;
+}
+
 @keyframes spin {
-  0% { transform: rotate(0deg); } /* Start at 0 degrees */
-  100% { transform: rotate(360deg); } /* End at 360 degrees */
+  0% {
+    transform: rotate(0deg);
+  } /* Start at 0 degrees */
+  100% {
+    transform: rotate(360deg);
+  } /* End at 360 degrees */
 }
 </style>

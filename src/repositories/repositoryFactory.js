@@ -1,4 +1,4 @@
-import { FirebaseRepository } from '@/repositories/FirebaseRepository';
+import { FirebaseRepository } from '@/repositories/firebaseRepository';
 
 
 const mapping = Symbol();

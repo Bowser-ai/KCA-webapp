@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import MainScreen from "@/views/Mainscreen";
+import MainScreen from "../../src/views/Mainscreen.vue";
 
 describe("Mainscreen.vue", () => {
   const wrapper = mount(MainScreen, {
