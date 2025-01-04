@@ -19,6 +19,7 @@
       <input
       :placeholder="searchBarMode.placeholder"
       :type="searchBarMode.type"
+      ref="searchField"
       id="search-field"
       class="search-input-field"
       @keyup.enter="search($event, searchBarMode.fn)"
@@ -140,7 +141,7 @@ export default {
       this.searchMode = e.target.value;
     },
     clearInput() {
-      document.querySelector('#search-field').value = '';
+      this.$refs.searchField.value = "";
     },
   },
 }

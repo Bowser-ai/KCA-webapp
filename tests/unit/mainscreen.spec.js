@@ -1,28 +1,28 @@
 import { mount } from "@vue/test-utils";
-import MainScreen from "../../src/views/Mainscreen.vue";
+import MainScreen from "@/views/Mainscreen";
 
 describe("Mainscreen.vue", () => {
   const wrapper = mount(MainScreen, {
     propsData: {
       filialen: {
         1156: {
-          filiaalNumber: 1156,
+          filiaalnummer: 1156,
           address: "address",
-          zipcode: "6543GH",
+          postcode: "6543GH",
           info: "yoyo",
           tel: "0645435",
         },
         1259: {
-          filiaalNumber: 1259,
+          filiaalnummer: 1259,
           address: "address2",
-          zipcode: "8943ZV",
+          postcode: "8943ZV",
           info: "oppassen",
           tel: "06343435",
         },
         16: {
-          filiaalNumber: 16,
+          filiaalnummer: 16,
           address: "address3",
-          zipcode: "3432JD",
+          postcode: "3432JD",
           info: "laat maar",
           tel: "06345399",
         },
@@ -55,7 +55,7 @@ describe("Mainscreen.vue", () => {
     );
   });
   it("search address", async () => {
-    await wrapper.find("#address").trigger("change");
+    await wrapper.find('input[value="adres/plaats"]').trigger("change");
     const searchField = wrapper.find("#search-field");
     searchField.setValue("address3");
     await searchField.trigger("keyup.enter");
@@ -64,7 +64,7 @@ describe("Mainscreen.vue", () => {
     expect(filiaalCard.html()).toContain("16");
   });
   it("search zipcode", async () => {
-    await wrapper.find("#zipcode").trigger("change");
+    await wrapper.find('input[value="postcode"]').trigger("change");
     const searchField = wrapper.find("#search-field");
     searchField.setValue("8943ZV");
     await searchField.trigger("keyup.enter");
