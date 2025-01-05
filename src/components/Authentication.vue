@@ -1,6 +1,6 @@
 <template>
   <div v-if="!authenticatedUser || isLoading" class="auth">
-    <div class="spinner" v-if="isLoading"></div>
+    <Loader class="loader" v-if="isLoading" />
     <form v-else class="auth-form">
       <div class="form-element">
         <label for="username">Gebruikersnaam</label>
@@ -21,12 +21,14 @@
       </div>
       <div class="auth-error">{{ authError }}</div>
       <button
+        v-if="!isAuthenticating"
         :disabled="!username || !password"
         @click="login"
         class="login-btn"
       >
         Login
       </button>
+      <div class="login-loader" v-else><Loader></Loader></div>
     </form>
   </div>
 </template>
@@ -38,8 +40,12 @@ import {
   InvalidPassword,
   UnknownError,
 } from "@/authentication/authError";
+import Loader from "@/components/Loader.vue";
 
 export default {
+  components: {
+    Loader,
+  },
   data() {
     return {
       username: "",
@@ -47,6 +53,7 @@ export default {
       authenticatedUser: null,
       authError: "",
       isLoading: true,
+      isAuthenticating: false,
     };
   },
   beforeCreate() {
@@ -58,9 +65,10 @@ export default {
   methods: {
     async login(event) {
       event.preventDefault();
+      this.isAuthenticating = true;
+      this.authError = "";
       try {
         await Auth.login(this.username, this.password);
-        this.authError = "";
       } catch (e) {
         if (e instanceof InvalidUserName) {
           this.authError = "Gebruikersnaam is niet correct.";
@@ -75,6 +83,9 @@ export default {
             "Er heeft een fout opgetreden, probeer het later nog eens.";
           return;
         }
+      }
+      finally {
+        this.isAuthenticating = false;
       }
     },
   },
@@ -121,31 +132,15 @@ export default {
 .login-btn {
   font-size: 14pt;
 }
-.spinner {
-  border: 4px solid #f3f3f3; /* Light gray background */
-  border-top: 4px solid #3498db; /* Blue color for the spinning part */
-  border-radius: 50%; /* Make it circular */
-  width: 40px; /* Set the width of the spinner */
-  height: 40px; /* Set the height of the spinner */
-  animation: spin 1s linear infinite; /* Animation to make it spin */
-  position: absolute;
-  left: 50%;
-  top: 50%;
-}
-
 .auth-error {
   color: red;
   text-align: center;
   height: 5%;
   margin-bottom: 20px;
 }
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  } /* Start at 0 degrees */
-  100% {
-    transform: rotate(360deg);
-  } /* End at 360 degrees */
+.loader {
+  position: absolute;
+  left: 50%;
+  top: 50%;
 }
 </style>
