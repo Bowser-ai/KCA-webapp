@@ -85,6 +85,10 @@ export default {
   methods: {
     searchFiliaalNummer(e) {
       const filiaalNummer = e.target.value;
+      if (!filiaalNummer) {
+        this.error = "Geen invoer voer een filiaalnummer in."
+        return;
+      }
       const filiaal = this.filialen[filiaalNummer];
       if (filiaal === undefined) {
         this.error = `filiaal met nummer: "${filiaalNummer}" niet gevonden`;

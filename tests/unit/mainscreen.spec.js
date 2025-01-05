@@ -10,21 +10,21 @@ describe("Mainscreen.vue", () => {
           address: "address",
           postcode: "6543GH",
           info: "yoyo",
-          tel: "0645435",
+          telnum: "0645435",
         },
         1259: {
           filiaalnummer: 1259,
           address: "address2",
           postcode: "8943ZV",
           info: "oppassen",
-          tel: "06343435",
+          telnum: "06343435",
         },
         16: {
           filiaalnummer: 16,
           address: "address3",
           postcode: "3432JD",
           info: "laat maar",
-          tel: "06345399",
+          telnum: "06345399",
         },
       },
     },
@@ -44,6 +44,14 @@ describe("Mainscreen.vue", () => {
     expect(filiaalCard.html()).toContain("yoyo");
     expect(filiaalCard.html()).toContain("0645435");
   });
+  it("no search input should show an error message", async () => {
+    const searchField = wrapper.find("#search-field");
+    searchField.setValue("");
+    await searchField.trigger("keyup.enter");
+    const filiaalCard = wrapper.findComponent({ name: "FiliaalCard" });
+    expect(filiaalCard.exists()).toBe(false);
+    expect(wrapper.text()).toContain("Geen invoer voer een filiaalnummer in");
+  })
   it("non-existing-filiaal should not create a FiliaalCard", async () => {
     const searchField = wrapper.find("#search-field");
     searchField.setValue("1299");
