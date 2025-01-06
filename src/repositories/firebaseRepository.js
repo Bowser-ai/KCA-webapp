@@ -34,6 +34,6 @@ export class FirebaseRepository extends BaseRepository {
 
     const key = Object.keys(snapShot.val())[0];
 
-    await update(ref(db), { [key]: filiaal });
+    await update(ref(db), { [key + "/mededeling"]: filiaal.mededeling });
   }
 }
